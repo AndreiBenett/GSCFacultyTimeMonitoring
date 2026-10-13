@@ -1,0 +1,185 @@
+@model HomeViewModel
+@{
+    ViewData["Title"] = "Faculty Time-In";
+    // Keep the existing department assignment rules and all attendance actions intact.
+    var college = Model.Faculty.Where(x => !x.IsSeniorHigh).ToList();
+    var seniorHigh = Model.Faculty.Where(x => x.IsSeniorHigh).ToList();
+}
+<section class="public-hero">
+    <div class="container-xl portal-container py-4 py-lg-5">
+        <div class="portal-layout">
+            <aside class="portal-intro" aria-labelledby="portalWelcomeTitle">
+                <div class="portal-intro-glow" aria-hidden="true"></div>
+                <div class="portal-intro-content">
+                    <div class="portal-identity">
+                        <span class="portal-eyebrow"><span class="portal-status-dot" aria-hidden="true"></span> Official Attendance Portal</span>
+                    </div>
+                    <h1 id="portalWelcomeTitle" class="portal-title">Your time matters.<br /><span>Every day.</span></h1>
+                    <p class="portal-lead">A faster, simpler way to record your daily time-in. Select your department, find your name, and confirm your attendance.</p>
+
+                    <div class="portal-steps" aria-label="How to record your time-in">
+                        <div class="portal-step">
+                            <span class="portal-step-number">01</span>
+                            <div><strong>Choose your department</strong><small>Junior High School or Senior High School</small></div>
+                        </div>
+                        <div class="portal-step">
+                            <span class="portal-step-number">02</span>
+                            <div><strong>Find and select your name</strong><small>Use the search box to locate your record</small></div>
+                        </div>
+                        <div class="portal-step">
+                            <span class="portal-step-number">03</span>
+                            <div><strong>Confirm your time-in</strong><small>Your Philippine time is recorded automatically</small></div>
+                        </div>
+                    </div>
+
+                    <div class="live-clock-card portal-clock" data-live-clock data-server-time="@Model.ServerTimeUnixMilliseconds" aria-label="Current Philippine date and time">
+                        <div class="portal-clock-icon" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+                        </div>
+                        <div class="portal-clock-details">
+                            <span class="clock-label">Philippine Standard Time</span>
+                            <strong id="liveTime">--:--:-- --</strong>
+                            <span class="portal-clock-date" id="liveDate">@Model.CurrentDate.ToString("MMMM d, yyyy")</span>
+                        </div>
+                        <span class="portal-clock-zone">PHT</span>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="portal-main">
+                <div class="timein-card">
+                    <div class="timein-card-header">
+                        <div class="timein-header-icon" aria-hidden="true">
+                            <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h5M8 16l2 2 4-4"/></svg>
+                        </div>
+                        <div>
+                            <span class="system-kicker">DAILY ATTENDANCE</span>
+                            <h2 class="timein-heading">Record your time-in</h2>
+                            <p class="timein-subheading">It only takes a few seconds.</p>
+                        </div>
+                    </div>
+
+                    @if (TempData["HomeError"] is string homeError)
+                    {
+                        <div class="alert alert-danger premium-alert" role="alert">@homeError</div>
+                    }
+
+                    <form asp-controller="Home" asp-action="TimeIn" method="post" id="timeInForm">
+                        <input type="hidden" id="facultyId" name="facultyId" value="" />
+                        <div class="faculty-picker">
+                            <div class="form-step-heading">
+                                <span class="form-step-chip">1</span>
+                                <div class="form-step-title" id="departmentLabel">Select your department</div>
+                            </div>
+                            <div class="department-tabs" role="tablist" aria-labelledby="departmentLabel">
+                                <button type="button" class="department-tab active" id="collegeTab" data-department-tab="college" role="tab" aria-controls="jhsPane" aria-selected="true">
+                                    <span class="department-tab-name">Junior High School</span>
+                                    <span class="department-count">@college.Count</span>
+                                </button>
+                                <button type="button" class="department-tab" id="shsTab" data-department-tab="shs" role="tab" aria-controls="shsPane" aria-selected="false">
+                                    <span class="department-tab-name">Senior High School</span>
+                                    <span class="department-count">@seniorHigh.Count</span>
+                                </button>
+                            </div>
+
+                            <div class="form-step-heading search-step-heading">
+                                <span class="form-step-chip">2</span>
+                                <label for="facultySearch" class="form-step-title">Find your name</label>
+                            </div>
+                            <div class="search-box mb-2">
+                                <span class="search-symbol" aria-hidden="true">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
+                                </span>
+                                <input id="facultySearch" type="search" class="form-control" aria-describedby="facultySearchHelp" placeholder="Search by surname or first name" autocomplete="off" />
+                            </div>
+                            <div class="picker-status" id="facultySearchHelp" aria-live="polite">
+                                <span id="facultyVisibleCount">Choose a name from the list below</span>
+                                <span class="picker-sort-note">A–Z by surname</span>
+                            </div>
+
+                            <div id="selectedFaculty" class="selected-faculty d-none" aria-live="polite">
+                                <span class="selected-check" aria-hidden="true">✓</span>
+                                <div class="selected-content"><span class="selected-badge">SELECTED PERSONNEL</span><strong id="selectedFacultyName"></strong></div>
+                                <button type="button" class="btn-link-clean" id="clearFaculty">Change</button>
+                            </div>
+
+                            <div id="facultyList" class="faculty-list" role="group" aria-label="Personnel list">
+                                @foreach (var dept in new[] { (Key: "college", People: college), (Key: "shs", People: seniorHigh) })
+                                {
+                                    <div class="department-pane" data-department-pane="@dept.Key" id="@(dept.Key == "college" ? "jhsPane" : "shsPane")" role="tabpanel" aria-labelledby="@(dept.Key == "college" ? "collegeTab" : "shsTab")" hidden="@(dept.Key == "shs")">
+                                        @if (dept.People.Count == 0)
+                                        {
+                                            <div class="empty-state">No active personnel in this department yet. An administrator can add members under Faculty Management.</div>
+                                        }
+                                        @foreach (var group in dept.People.GroupBy(x => x.Initial).OrderBy(x => x.Key))
+                                        {
+                                            <div class="faculty-group" data-group="@group.Key">
+                                                <div class="faculty-letter">@group.Key</div>
+                                                @foreach (var person in group)
+                                                {
+                                                    var alreadyTimedIn = Model.TimedInTodayIds.Contains(person.FacultyId);
+                                                    <button type="button"
+                                                            class="faculty-option @(alreadyTimedIn ? "already-timed-in" : "")"
+                                                            data-faculty-id="@person.FacultyId"
+                                                            data-faculty-name="@person.DisplayName"
+                                                            data-search="@person.DisplayName.ToLowerInvariant() @person.FullName.ToLowerInvariant() @person.Department.ToLowerInvariant()"
+                                                            disabled="@alreadyTimedIn"
+                                                            aria-label="@person.DisplayName @(alreadyTimedIn ? "already timed in today" : "select")">
+                                                        <span class="faculty-avatar">@person.Initial</span>
+                                                        <span class="faculty-meta">
+                                                            <strong>@person.DisplayName</strong>
+                                                            <small>@person.Department</small>
+                                                        </span>
+                                                        @if (alreadyTimedIn)
+                                                        {
+                                                            <span class="faculty-done"><span aria-hidden="true">✓</span> Recorded</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="faculty-chevron" aria-hidden="true">›</span>
+                                                        }
+                                                    </button>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                <div id="noFacultyMatch" class="empty-state d-none">No matching personnel found. Try a different name or department.</div>
+                            </div>
+                            <p class="picker-helper mb-0"><span aria-hidden="true">✓</span> Names marked “Recorded” have already timed in today.</p>
+                        </div>
+                        <button id="timeInButton" type="submit" class="btn-timein" disabled>
+                            <span class="timein-icon" aria-hidden="true">
+                                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9 17l11-11"/></svg>
+                            </span>
+                            <span class="timein-button-label">CONFIRM TIME-IN</span>
+                            <span class="button-arrow" aria-hidden="true">→</span>
+                        </button>
+                        <p class="timein-button-hint">Select your name above to enable time-in.</p>
+                    </form>
+                </div>
+                <p class="monitoring-note mt-3 mb-0">For administrative monitoring only. This portal does not replace your official DTR, biometric system, or payroll record.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="confirmTimeInModal" tabindex="-1" aria-labelledby="confirmTimeInTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content confirmation-modal">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="confirmTimeInTitle">Confirm your time-in</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2 text-secondary">You're about to record today's attendance for:</p>
+                <div class="confirm-person-name" id="confirmTimeInName"></div>
+                <p class="small text-secondary mt-3 mb-0">The system saves Philippine Standard Time automatically. You can only record one time-in per day.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-success" type="button" id="confirmTimeInSubmit">Yes, Record Time-In</button>
+            </div>
+        </div>
+    </div>
+</div>

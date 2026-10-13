@@ -1,0 +1,32 @@
+﻿# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build folders
+bin/
+obj/
+
+# Logs
+*.log
+
+# Database/local files
+*.db
+*.sqlite
+
+# Development settings
+appsettings.Development.json
+appsettings.Local.json
+
+# Publish folders
+publish/
+Publish/
+
+# Rider
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

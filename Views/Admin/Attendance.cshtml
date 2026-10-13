@@ -1,0 +1,76 @@
+@model AttendanceIndexViewModel
+@{
+    ViewData["Title"] = "Attendance Report";
+}
+<div class="container-xl py-4 py-lg-5">
+    <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3 mb-4">
+        <div>
+            <div class="system-kicker">Reports</div>
+            <h1 class="page-title mb-1">Faculty Time-In Records</h1>
+            <p class="text-secondary mb-0">@Model.Date.ToString("MMMM d, yyyy") · @Model.Records.Count record(s)</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2 no-print">
+            <a class="btn btn-outline-primary" asp-action="PeriodReport" asp-route-period="weekly">Weekly</a>
+            <a class="btn btn-outline-primary" asp-action="PeriodReport" asp-route-period="monthly">Monthly</a>
+            <a class="btn btn-success" asp-action="ExportExcel" asp-route-date="@Model.Date.ToString("yyyy-MM-dd")" asp-route-search="@Model.Search">Export Excel</a>
+            <button class="btn btn-outline-secondary" type="button" id="printReportButton">Print Report</button>
+        </div>
+    </div>
+
+    <div class="panel-card no-print mb-4">
+        <form method="get" asp-action="Attendance" class="row g-3 align-items-end">
+            <div class="col-12 col-md-3">
+                <label class="form-label">Date</label>
+                <input class="form-control" type="date" name="date" value="@Model.Date.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-12 col-md-5">
+                <label class="form-label">Search</label>
+                <input class="form-control" type="search" name="search" value="@Model.Search" placeholder="Faculty name or department" />
+            </div>
+            <div class="col-12 col-md-2">
+                <label class="form-label">Sort</label>
+                <select class="form-select" asp-for="Sort">
+                    <option value="name_asc">Surname A–Z</option>
+                    <option value="name_desc">Surname Z–A</option>
+                    <option value="time_asc">Time earliest</option>
+                    <option value="time_desc">Time latest</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-2 d-grid">
+                <button class="btn btn-primary" type="submit">Apply</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="print-header d-none d-print-block mb-4">
+        <img src="~/images/gsc-logo.png" alt="Good Samaritan Colleges" />
+        <h1>Faculty Time-In Monitoring Report</h1>
+        <p>@Model.Date.ToString("MMMM d, yyyy")</p>
+    </div>
+
+    <div class="panel-card print-panel">
+        <div class="table-responsive">
+            <table class="table premium-table responsive-stack align-middle mb-0">
+                <thead><tr><th>Faculty Name</th><th>Department</th><th>Date</th><th>Time In</th></tr></thead>
+                <tbody>
+                @if (Model.Records.Count == 0)
+                {
+                    <tr><td colspan="4" class="text-center py-5 text-secondary">No records found for the selected date.</td></tr>
+                }
+                else
+                {
+                    @foreach (var row in Model.Records)
+                    {
+                        <tr>
+                            <td data-label="Faculty"><strong>@row.FacultyName</strong></td>
+                            <td data-label="Department">@row.Department</td>
+                            <td data-label="Date">@row.Date.ToString("MMM d, yyyy")</td>
+                            <td data-label="Time In"><span class="time-pill">@row.TimeIn.ToString("h:mm:ss tt")</span></td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

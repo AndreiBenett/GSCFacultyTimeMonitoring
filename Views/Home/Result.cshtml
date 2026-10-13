@@ -1,0 +1,204 @@
+@model TimeInResultViewModel
+
+@{
+    ViewData["Title"] = Model.IsSuccess
+        ? "Time-In Recorded"
+        : "Attendance Status";
+}
+
+
+<section class="public-hero">
+
+    <div class="container-xl py-5">
+
+        <div class="row justify-content-center">
+
+            <div class="col-12 col-md-8 col-lg-6">
+
+
+                <div class="result-card text-center">
+
+
+                    <!-- ICON -->
+
+                    <div class="result-icon @(Model.IsSuccess ? "success" : "info")">
+
+                        @(Model.IsSuccess ? "✓" : "!")
+
+                    </div>
+
+
+
+                    <!-- TITLE -->
+
+                    <div class="system-kicker">
+
+                        @(Model.IsSuccess
+                            ? "Successfully Recorded"
+                            : "Attendance Notice")
+
+                    </div>
+
+
+
+                    <h1 class="h2 mt-2">
+
+                        @Model.Message
+
+                    </h1>
+
+
+
+                    <!-- ATTENDANCE DETAILS -->
+
+                    <div class="result-details text-start mt-4">
+
+
+                        <div>
+                            <span>Faculty</span>
+
+                            <strong>
+                                @Model.FacultyName
+                            </strong>
+                        </div>
+
+
+
+                        <div>
+                            <span>Date</span>
+
+                            <strong>
+                                @Model.Date.ToString("MMMM d, yyyy")
+                            </strong>
+                        </div>
+
+
+
+                        <div>
+                            <span>Time</span>
+
+                            <strong>
+                                @Model.Time.ToString("h:mm:ss tt")
+                            </strong>
+                        </div>
+
+
+
+                        <div>
+                            <span>Status</span>
+
+                            <strong>
+                                @(Model.IsSuccess
+                                    ? "RECORDED"
+                                    : "ALREADY RECORDED")
+                            </strong>
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- NORMAL MESSAGE -->
+                    @if (Model.IsSuccess)
+                    {
+
+                        <div class="alert alert-success mt-4 shadow-sm text-start">
+
+                            <h5>
+                                ✅ Attendance Recorded Successfully
+                            </h5>
+
+
+                            <p class="mb-1">
+                                Faculty:
+                                <strong>
+                                    @Model.FacultyName
+                                </strong>
+                            </p>
+
+
+                            <p class="mb-0">
+                                Time:
+                                <strong>
+                                    @Model.Time.ToString("h:mm:ss tt")
+                                </strong>
+                            </p>
+
+                        </div>
+
+                    }
+                    else
+                    {
+
+                        <div class="alert alert-warning mt-4 shadow-sm text-start">
+
+                            <h5>
+                                ⚠️ Attendance Already Recorded
+                            </h5>
+
+
+                            <p class="mb-1">
+                                Your attendance today:
+                            </p>
+
+
+                            <p class="mb-1">
+
+                                Faculty:
+
+                                <strong>
+                                    @Model.FacultyName
+                                </strong>
+
+                            </p>
+
+
+                            <p class="mb-0">
+
+                                Time Recorded:
+
+                                <strong>
+                                    @Model.Time.ToString("h:mm:ss tt")
+                                </strong>
+
+                            </p>
+
+
+                        </div>
+
+                    }
+
+
+
+                    <a asp-action="Index"
+                       class="btn btn-primary btn-lg w-100 mt-4">
+
+                        Back to Faculty List
+
+                    </a>
+
+
+
+                    <p class="monitoring-note mt-3 mb-0">
+
+                        No manual time entry is accepted.
+                        The timestamp above was created by the system.
+
+                    </p>
+
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+</section>

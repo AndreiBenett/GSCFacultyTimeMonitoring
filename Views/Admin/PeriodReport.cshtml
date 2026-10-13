@@ -1,0 +1,93 @@
+@model PeriodAttendanceViewModel
+@{
+    ViewData["Title"] = "Weekly / Monthly Reports";
+    var monthly = Model.Period == "monthly";
+    var dateValue = Model.SelectedDate.ToString("yyyy-MM-dd");
+}
+<div class="container-xl py-4 py-lg-5">
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+        <div>
+            <div class="system-kicker">Personnel Attendance</div>
+            <h1 class="page-title mb-1">@(monthly ? "Monthly" : "Weekly") Report</h1>
+            <p class="text-secondary mb-0">@Model.Start.ToString("MMM d, yyyy") – @Model.End.ToString("MMM d, yyyy")</p>
+        </div>
+        <div class="d-flex gap-2 no-print">
+            <a class="btn btn-outline-primary" asp-action="ExportPeriodExcel" asp-route-period="@Model.Period" asp-route-date="@dateValue" asp-route-department="@Model.Department" asp-route-search="@Model.Search" asp-route-sort="@Model.Sort">Export Excel</a>
+            <button class="btn btn-primary" type="button" id="printReportButton">Print Report</button>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-4 no-print">
+        <a asp-action="PeriodReport" asp-route-period="weekly" asp-route-date="@dateValue" class="btn @(monthly ? "btn-outline-primary" : "btn-primary")">Weekly Report</a>
+        <a asp-action="PeriodReport" asp-route-period="monthly" asp-route-date="@dateValue" class="btn @(monthly ? "btn-primary" : "btn-outline-primary")">Monthly Report</a>
+        <a asp-action="Attendance" class="btn btn-outline-secondary">Daily Time-Ins</a>
+    </div>
+
+    <div class="panel-card mb-4 no-print">
+        <form method="get" asp-action="PeriodReport" class="row g-3 align-items-end">
+            <input type="hidden" name="period" value="@Model.Period" />
+            <div class="col-12 col-md-2"><label class="form-label" for="reportDate">Select date</label><input id="reportDate" class="form-control" type="date" name="date" value="@dateValue" /></div>
+            <div class="col-12 col-md-3"><label class="form-label" for="reportDepartment">Department</label><select id="reportDepartment" class="form-select" name="department"><option value="">All departments</option>
+                @foreach (var department in Model.Departments) { <option value="@department" selected="@(department == Model.Department)">@department</option> }
+            </select></div>
+            <div class="col-12 col-md-2"><label class="form-label" for="reportSearch">Search</label><input id="reportSearch" class="form-control" name="search" value="@Model.Search" placeholder="Personnel" /></div>
+            <div class="col-12 col-md-3"><label class="form-label" for="reportSort">Sort by</label><select id="reportSort" class="form-select" name="sort">
+                <option value="name_asc" selected="@(Model.Sort == "name_asc")">Surname A–Z</option>
+                <option value="name_desc" selected="@(Model.Sort == "name_desc")">Surname Z–A</option>
+                <option value="late_desc" selected="@(Model.Sort == "late_desc")">Most late first</option>
+                <option value="late_asc" selected="@(Model.Sort == "late_asc")">Fewest late first</option>
+                <option value="absent_desc" selected="@(Model.Sort == "absent_desc")">Most absent first</option>
+                <option value="absent_asc" selected="@(Model.Sort == "absent_asc")">Fewest absent first</option>
+            </select></div>
+            <div class="col-12 col-md-2 d-grid"><button type="submit" class="btn btn-primary">Apply</button></div>
+        </form>
+    </div>
+
+    <div class="print-header d-none d-print-block mb-3">
+        <img src="~/images/gsc-logo.png" alt="Good Samaritan Colleges" />
+        <h1>@(monthly ? "Monthly" : "Weekly") Personnel Time-In Report</h1>
+        <p>@Model.Start.ToString("MMM d, yyyy") – @Model.End.ToString("MMM d, yyyy")</p>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3"><div class="metric-card"><span>Personnel</span><strong>@Model.Rows.Count</strong></div></div>
+        <div class="col-6 col-lg-3"><div class="metric-card"><span>Recorded Days</span><strong>@Model.TotalPresent</strong></div></div>
+        <div class="col-6 col-lg-3"><div class="metric-card"><span>Total Late</span><strong>@Model.TotalLate</strong></div></div>
+        <div class="col-6 col-lg-3"><div class="metric-card"><span>Missing Time-Ins*</span><strong>@Model.TotalAbsent</strong></div></div>
+    </div>
+
+    <div class="alert alert-warning report-assumptions mb-4" role="note">
+        <strong>Important: provisional absences.</strong> Missing time-ins are counted as possible absences, not verified unexcused absences. Verify approved leave, hiring dates, holidays, individual shifts and official DTR records before taking action.
+        <div class="small mt-2">Late if recorded after <strong>@Model.LateAfter.ToString("h:mm tt")</strong> · Completed workdays only: <strong>@Model.CompletedWorkingDays</strong> · Working days: @Model.WorkingDaysLabel · Today is only included after <strong>@Model.CloseDayAt.ToString("h:mm tt")</strong>. Configure these rules on Render before relying on the figures.</div>
+    </div>
+
+    <div class="panel-card print-panel">
+        <div class="table-responsive">
+            <table class="table premium-table responsive-stack align-middle mb-0 report-table">
+                <thead><tr><th>Surname, Given Name</th><th>Department</th><th>Present</th><th>Late</th><th>Absent*</th><th>Late Dates</th><th>Missing Dates*</th></tr></thead>
+                <tbody>
+                @if (Model.Rows.Count == 0)
+                {
+                    <tr><td colspan="7" class="text-center py-4">No active personnel match these filters.</td></tr>
+                }
+                @foreach (var item in Model.Rows)
+                {
+                    <tr>
+                        <td data-label="Personnel"><strong>@item.Name</strong></td>
+                        <td data-label="Department">@item.Department</td>
+                        <td data-label="Present">@item.Present</td>
+                        <td data-label="Late"><span class="@(item.Late > 0 ? "text-danger fw-bold" : "")">@item.Late</span></td>
+                        <td data-label="Absent"><span class="@(item.Absences > 0 ? "text-danger fw-bold" : "")">@item.Absences</span></td>
+                        <td data-label="Late dates">@(item.LateDates.Count == 0 ? "—" : string.Join(", ", item.LateDates.Select(x => x.ToString("MMM d"))))</td>
+                        <td data-label="Missing dates">@(item.AbsentDates.Count == 0 ? "—" : string.Join(", ", item.AbsentDates.Select(x => x.ToString("MMM d"))))</td>
+                    </tr>
+                }
+                </tbody>
+                <tfoot><tr class="fw-bold"><td colspan="2">TOTAL</td><td>@Model.TotalPresent</td><td>@Model.TotalLate</td><td>@Model.TotalAbsent</td><td colspan="2"></td></tr></tfoot>
+            </table>
+        </div>
+    </div>
+    <p class="small text-secondary mt-3">* Absence and missing-date figures are inferred from days without a time-in record, not from approved-leave or employment-status history. Future dates and unfinished days are excluded.</p>
+</div>
+
+<style media="print">@@page { size: A4 landscape; margin: 12mm; }</style>

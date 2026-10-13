@@ -1,0 +1,52 @@
+@model FacultyIndexViewModel
+@{
+    ViewData["Title"] = "Faculty Management";
+}
+<div class="container-xl py-4 py-lg-5">
+    <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3 mb-4">
+        <div>
+            <div class="system-kicker">Directory</div>
+            <h1 class="page-title mb-1">Faculty Management</h1>
+            <p class="text-secondary mb-0">Maintain the names shown on the public Time-In page.</p>
+        </div>
+        <a class="btn btn-primary no-print" asp-action="Create">Add Faculty</a>
+    </div>
+
+    <div class="panel-card mb-4 no-print">
+        <form method="get" class="row g-2">
+            <div class="col-12 col-md-10"><input class="form-control" type="search" name="search" value="@Model.Search" placeholder="Search faculty or department" /></div>
+            <div class="col-12 col-md-2 d-grid"><button class="btn btn-outline-primary" type="submit">Search</button></div>
+        </form>
+    </div>
+
+    <div class="panel-card">
+        <div class="table-responsive">
+            <table class="table premium-table responsive-stack align-middle mb-0">
+                <thead><tr><th>Faculty Name</th><th>Department</th><th>Status</th><th class="text-end no-print">Actions</th></tr></thead>
+                <tbody>
+                @if (Model.Faculty.Count == 0)
+                {
+                    <tr><td colspan="4" class="text-center py-5 text-secondary">No faculty members found.</td></tr>
+                }
+                else
+                {
+                    @foreach (var faculty in Model.Faculty)
+                    {
+                        <tr>
+                            <td data-label="Faculty"><strong>@GSCFacultyTimeMonitoring.Services.FacultyNameFormatter.SurnameFirst(faculty.FullName)</strong></td>
+                            <td data-label="Department">@faculty.Department</td>
+                            <td data-label="Status"><span class="status-pill @(faculty.Status == "Active" ? "active" : "inactive")">@faculty.Status</span></td>
+                            <td data-label="Actions" class="text-end no-print">
+                                <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@faculty.FacultyId">Edit</a>
+                                <form asp-action="ToggleStatus" asp-route-id="@faculty.FacultyId" method="post" class="d-inline">
+                                    <button class="btn btn-sm btn-outline-secondary" type="submit">@(faculty.Status == "Active" ? "Deactivate" : "Activate")</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

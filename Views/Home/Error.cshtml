@@ -1,0 +1,15 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "System Error";
+}
+<div class="container-xl py-5">
+    <div class="panel-card mx-auto" style="max-width:720px">
+        <h1 class="h3">Something went wrong.</h1>
+        <p class="text-secondary">The request could not be completed. Please try again. If the issue continues, contact the GSC ICT Department.</p>
+        @if (Model.ShowRequestId)
+        {
+            <p class="small text-secondary">Request ID: <code>@Model.RequestId</code></p>
+        }
+        <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Return home</a>
+    </div>
+</div>

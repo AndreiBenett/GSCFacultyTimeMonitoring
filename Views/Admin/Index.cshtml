@@ -1,0 +1,54 @@
+@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+<div class="container-xl py-4 py-lg-5">
+    <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3 mb-4">
+        <div>
+            <div class="system-kicker">Administration</div>
+            <h1 class="page-title mb-1">Faculty Time-In Dashboard</h1>
+            <p class="text-secondary mb-0">Live summary for @Model.Today.ToString("MMMM d, yyyy")</p>
+        </div>
+        <div class="d-flex gap-2 no-print">
+            <a class="btn btn-outline-primary" asp-action="Attendance" asp-route-date="@Model.Today.ToString("yyyy-MM-dd")">View Attendance</a>
+            <a class="btn btn-primary" asp-controller="FacultyAdmin" asp-action="Index">Manage Faculty</a>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-4 no-print">
+        <a class="btn btn-outline-primary" asp-action="PeriodReport" asp-route-period="weekly">Weekly Attendance Summary</a>
+        <a class="btn btn-outline-primary" asp-action="PeriodReport" asp-route-period="monthly">Monthly Attendance Summary</a>
+    </div>
+
+    <div class="row g-3 g-lg-4 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3"><div class="metric-card"><span>Timed In Today</span><strong>@Model.TimedInToday</strong><small>Faculty recorded</small></div></div>
+        <div class="col-12 col-sm-6 col-xl-3"><div class="metric-card"><span>Active Faculty</span><strong>@Model.TotalActiveFaculty</strong><small>Available in public list</small></div></div>
+        <div class="col-12 col-sm-6 col-xl-3"><div class="metric-card"><span>Not Yet Timed In</span><strong>@Model.NotYetTimedIn</strong><small>As of current time</small></div></div>
+        <div class="col-12 col-sm-6 col-xl-3"><div class="metric-card"><span>Monitoring Rate</span><strong>@($"{Model.AttendanceRate}%")</strong><small>Today only</small></div></div>
+    </div>
+
+    <div class="panel-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div><h2 class="h5 mb-1">Latest Time-Ins</h2><p class="small text-secondary mb-0">Most recent records for today</p></div>
+            <a class="btn btn-sm btn-outline-secondary no-print" asp-action="Attendance">Full report</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table premium-table responsive-stack align-middle mb-0">
+                <thead><tr><th>Faculty</th><th>Department</th><th>Time In</th></tr></thead>
+                <tbody>
+                @if (Model.RecentRecords.Count == 0)
+                {
+                    <tr><td colspan="3" class="text-center py-5 text-secondary">No faculty time-in records yet today.</td></tr>
+                }
+                else
+                {
+                    @foreach (var row in Model.RecentRecords)
+                    {
+                        <tr><td data-label="Faculty"><strong>@row.FacultyName</strong></td><td data-label="Department">@row.Department</td><td data-label="Time In"><span class="time-pill">@row.TimeIn.ToString("h:mm:ss tt")</span></td></tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

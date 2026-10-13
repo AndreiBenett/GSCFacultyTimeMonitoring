@@ -1,0 +1,51 @@
+@model FacultyFormViewModel
+@{
+    var isEdit = Model.FacultyId > 0;
+    var formAction = isEdit ? "Edit" : "Create";
+    ViewData["Title"] = isEdit ? "Edit Faculty" : "Add Faculty";
+}
+<div class="container-xl py-4 py-lg-5">
+    <div class="panel-card mx-auto" style="max-width:720px">
+        <div class="mb-4">
+            <div class="system-kicker">Faculty Directory</div>
+            <h1 class="h3 mb-1">@(isEdit ? "Edit faculty member" : "Add faculty member")</h1>
+            <p class="text-secondary mb-0">Active faculty appear in the public Time-In selection list.</p>
+        </div>
+
+        <form asp-action="@formAction" method="post">
+            <input asp-for="FacultyId" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger premium-alert"></div>
+            <div class="mb-3">
+                <label asp-for="FullName" class="form-label"></label>
+                <input asp-for="FullName" class="form-control" autocomplete="off" placeholder="Surname, First Name Middle Name" />
+                <small class="form-text text-secondary">For accurate surname sorting, enter <strong>surname first</strong>, e.g., <strong>Dela Cruz, Juan</strong>. Existing names can be kept or edited.</small>
+                <span asp-validation-for="FullName" class="text-danger small"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Department" class="form-label"></label>
+                <input asp-for="Department" class="form-control" autocomplete="off" list="departmentNames" placeholder="Select or type a department" />
+                <datalist id="departmentNames">
+                    <option value="College Faculty"></option>
+                    <option value="Senior High School Department"></option>
+                    <option value="Non-Teaching Personnel"></option>
+                </datalist>
+                <small class="form-text text-secondary">To appear in the Senior High School tab, use exactly <strong>Senior High School Department</strong>.</small>
+                <span asp-validation-for="Department" class="text-danger small"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="LateAfter" class="form-label"></label>
+                <input asp-for="LateAfter" class="form-control" type="time" />
+                <small class="form-text text-secondary">Default: 07:00 AM. Set selected faculty (example: SHS) to 07:30 AM if needed.</small>
+            </div>
+            <div class="mb-4">
+                <label asp-for="Status" class="form-label"></label>
+                <select asp-for="Status" class="form-select">
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" type="submit">@(isEdit ? "Save Changes" : "Add Faculty")</button>
+            <a class="btn btn-outline-secondary" asp-action="Index">Cancel</a>
+        </form>
+    </div>
+</div>
