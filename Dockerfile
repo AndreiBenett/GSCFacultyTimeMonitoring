@@ -1,8 +1,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 COPY . .
-RUN dotnet restore GSCFacultyTimeMonitoring/GSCFacultyTimeMonitoring.csproj
-RUN dotnet publish GSCFacultyTimeMonitoring/GSCFacultyTimeMonitoring.csproj -c Release -o /app/publish --no-restore
+RUN dotnet restore GSCFacultyTimeMonitoring.csproj
+RUN dotnet publish GSCFacultyTimeMonitoring.csproj -c Release -o /app/publish --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
